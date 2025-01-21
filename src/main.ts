@@ -1,26 +1,27 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 const rows = 10;
 const cols = 10;
 
-const cells = Array.from({ length: rows }, () => 
-  Array.from({ length: cols }, () => false)
+const cells: Cell[][] = Array.from({ length: rows }, () => 
+  Array.from({ length: cols }, () => ({ alive: false }))
 );
-
-function createGlider(x, y, cells) {
-  console.log("Glider created.");
-}
 
 // code for a single cell pillar
 const pillarGeometry = new THREE.BoxGeometry(1,1,1);
 const pillarMaterial = new THREE.MeshStandardMaterial({color: 0xffff000});
 const pillarObject = new THREE.Mesh(pillarGeometry, pillarMaterial);
 
-function drawCells(cells, scene, cellMesh){
-  for(let i = 0; i < rows; i++){
+interface Cell {
+  alive: boolean;
+}
+
+function drawCells(cells: Cell[][], scene: THREE.Scene, cellMesh: THREE.Mesh): void {
+  for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
-      if (cells[i][j]){
+      if (cells[i][j].alive) {
+        console.log("I'm an alive cell!")
         let newMesh = cellMesh.clone();
         newMesh.position.set(i, 0, j);
         scene.add(newMesh);
@@ -30,8 +31,13 @@ function drawCells(cells, scene, cellMesh){
 }
 // scene and camera setup
 
+const canvas = document.querySelector("#bg") as HTMLCanvasElement | null;
+if (!canvas) {
+  throw new Error("Canvas element not found");
+}
+
 const renderer = new THREE.WebGLRenderer({
-  canvas: document.querySelector("#bg"),
+  canvas: canvas,
 });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -56,9 +62,9 @@ scene.add(gridHelper);
 
 // test: set an initial condition
 console.log(JSON.stringify(cells));
-cells[0][0] = true;
-cells[1][1] = true;
-cells[2][2] = true;
+cells[0][0].alive = true;
+cells[1][1].alive = true;
+cells[2][2].alive = true;
 
 drawCells(cells, scene, pillarObject);
 
